@@ -261,7 +261,7 @@
                 RAM <div class="resource-bar-bg"><div class="resource-bar-fill" id="ram-bar" style="width:62%; background: var(--paik);"></div></div> <span id="ram-val">62%</span>
             </div>
             <div class="resource-item">
-                TOKENS/h <div class="resource-bar-bg"><div class="resource-bar-fill" id="tok-bar" style="width:20%; background: var(--bowie);"></div></div> <span id="tok-val">~12k</span>
+                LOAD <div class="resource-bar-bg"><div class="resource-bar-fill" id="tok-bar" style="width:20%; background: var(--bowie);"></div></div> <span id="tok-val">0.00</span>
             </div>
             <div class="resource-item">
                 SESSIONS <span style="color: var(--coder)">4</span>
@@ -508,18 +508,55 @@
                 `SIGNAL: ONLINE │ ${now.toISOString().slice(11,19)} UTC`;
         }, 1000);
 
-        // Simulate resource fluctuation
-        setInterval(() => {
-            const cpu = 20 + Math.random()*40;
-            const ram = 50 + Math.random()*25;
-            const tok = 5 + Math.random()*20;
-            document.getElementById('cpu-bar').style.width = cpu + '%';
-            document.getElementById('cpu-val').textContent = Math.round(cpu) + '%';
-            document.getElementById('ram-bar').style.width = ram + '%';
-            document.getElementById('ram-val').textContent = Math.round(ram) + '%';
-            document.getElementById('tok-bar').style.width = tok*4 + '%';
-            document.getElementById('tok-val').textContent = '~' + Math.round(tok) + 'k';
-        }, 3000);
+        // Fetch real data from status.json
+        const STATUS_URL = 'status.json';
+        const statusLabels = { active: '● ACTIVE', idle: '○ IDLE', thinking: '◐ THINKING', unknown: '? UNKNOWN' };
+        const statusClasses = { active: 'status-active', idle: 'status-idle', thinking: 'status-thinking', unknown: 'status-idle' };
+
+        async function fetchStatus() {
+            try {
+                const res = await fetch(STATUS_URL + '?t=' + Date.now());
+                const data = await res.json();
+
+                // System resources
+                const cpu = data.system.cpu_percent || 0;
+                const ram = data.system.ram_percent || 0;
+                const load = data.system.load || 0;
+                document.getElementById('cpu-bar').style.width = Math.min(cpu, 100) + '%';
+                document.getElementById('cpu-val').textContent = cpu.toFixed(1) + '%';
+                document.getElementById('ram-bar').style.width = Math.min(ram, 100) + '%';
+                document.getElementById('ram-val').textContent = ram.toFixed(1) + '%';
+                document.getElementById('tok-bar').style.width = Math.min(load*20, 100) + '%';
+                document.getElementById('tok-val').textContent = load.toFixed(2);
+
+                // Update agent cards
+                data.agents.forEach(agent => {
+                    const card = document.getElementById('card-' + agent.id);
+                    if (!card) return;
+                    const statusEl = card.querySelector('.agent-status');
+                    if (statusEl) {
+                        statusEl.className = 'agent-status ' + (statusClasses[agent.status] || 'status-idle');
+                        statusEl.textContent = statusLabels[agent.status] || '○ IDLE';
+                    }
+                    // Update model
+                    const modelEl = card.querySelector('.value[style]');
+                    if (modelEl && agent.model) {
+                        modelEl.textContent = agent.model;
+                    }
+                });
+
+                // Update header with real timestamp
+                const ts = new Date(data.timestamp);
+                document.getElementById('clock').textContent =
+                    `SIGNAL: ONLINE │ ${data.system.hostname} │ UP ${data.system.uptime} │ ${ts.toISOString().slice(11,19)} UTC`;
+
+            } catch(e) {
+                console.log('Status fetch failed, using cached data');
+            }
+        }
+
+        fetchStatus();
+        setInterval(fetchStatus, 30000); // refresh every 30s
     </script>
 </body>
 </html>

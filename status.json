@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-02-11T01:45:44Z",
+  "system": {
+    "hostname": "Yoonui-Macmini.local",
+    "cpu_percent": 3.6,
+    "cpu_cores": 14,
+    "ram_percent": 47.7,
+    "ram_total_gb": 64.0,
+    "load": 1.57,
+    "uptime": "9 days"
+  },
+  "agents": [
+    {"id":"paik","name":"PAIK","role":"VISUAL STRATEGIST","soul":"Nam June Paik","model":"claude-opus-4","color":"#ff00ff","status":"active"},
+    {"id":"flox","name":"FLOX","role":"ORCHESTRATOR","soul":"System Core","model":"claude-opus-4","color":"#00e5ff","status":"idle"},
+    {"id":"coder","name":"CODER","role":"DEVELOPER","soul":"Code Architect","model":"claude-sonnet","color":"#39ff14","status":"idle"},
+    {"id":"bowie","name":"BOWIE","role":"COSMIC SIGNAL","soul":"David Bowie","model":"claude-opus-4","color":"#ffaa00","status":"idle"}
+  ]
+}
