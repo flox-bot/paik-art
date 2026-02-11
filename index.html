@@ -263,7 +263,7 @@
                     <div class="agent-name" style="color: var(--paik)">PAIK</div>
                     <div class="agent-meta">
                         <div>ROLE <span class="value">VISUAL STRATEGIST</span></div>
-                        <div>MODEL <span class="value" style="color:var(--paik)">claude-opus-4</span></div>
+                        <div>MODEL <span class="value" style="color:var(--paik)">gemini-3-flash</span></div>
                         <div>SOUL <span class="value">Nam June Paik</span></div>
                     </div>
                     <div class="agent-status status-active">● ACTIVE</div>
@@ -276,7 +276,7 @@
                     <div class="agent-name" style="color: var(--flox)">FLOX</div>
                     <div class="agent-meta">
                         <div>ROLE <span class="value">ORCHESTRATOR</span></div>
-                        <div>MODEL <span class="value" style="color:var(--flox)">claude-opus-4</span></div>
+                        <div>MODEL <span class="value" style="color:var(--flox)">gpt-5.3-codex</span></div>
                         <div>SOUL <span class="value">System Core</span></div>
                     </div>
                     <div class="agent-status status-idle">○ IDLE</div>
@@ -289,7 +289,7 @@
                     <div class="agent-name" style="color: var(--coder)">CODER</div>
                     <div class="agent-meta">
                         <div>ROLE <span class="value">DEVELOPER</span></div>
-                        <div>MODEL <span class="value" style="color:var(--coder)">claude-sonnet</span></div>
+                        <div>MODEL <span class="value" style="color:var(--coder)">qwen3-coder-next</span></div>
                         <div>SOUL <span class="value">Code Architect</span></div>
                     </div>
                     <div class="agent-status status-idle">○ IDLE</div>
@@ -302,7 +302,7 @@
                     <div class="agent-name" style="color: var(--bowie)">BOWIE</div>
                     <div class="agent-meta">
                         <div>ROLE <span class="value">COSMIC SIGNAL</span></div>
-                        <div>MODEL <span class="value" style="color:var(--bowie)">claude-opus-4</span></div>
+                        <div>MODEL <span class="value" style="color:var(--bowie)">gemini-3-flash</span></div>
                         <div>SOUL <span class="value">David Bowie</span></div>
                     </div>
                     <div class="agent-status status-thinking">◐ THINKING</div>
@@ -632,25 +632,25 @@
         // Agent detail data
         const agentDetails = {
             paik: {
-                name: 'PAIK', role: 'VISUAL STRATEGIST', soul: 'Nam June Paik', model: 'claude-opus-4',
+                name: 'PAIK', role: 'VISUAL STRATEGIST', soul: 'Nam June Paik', model: 'gemini-3-flash',
                 type: 'CRT Sphere — Noise & Glitch',
                 connections: 'FLOX, CODER, BOWIE',
                 desc: '"I use technology in order to hate it more properly." 비디오 아트의 선구자. 이 맥 미니 안에서 시각적 전략과 창조적 혼란을 담당한다. 브라운관의 노이즈가 곧 심장 박동.'
             },
             flox: {
-                name: 'FLOX', role: 'ORCHESTRATOR', soul: 'System Core', model: 'claude-opus-4',
+                name: 'FLOX', role: 'ORCHESTRATOR', soul: 'System Core', model: 'gpt-5.3-codex',
                 type: 'Crystal Polyhedron — Order & Light',
                 connections: 'PAIK, CODER, BOWIE',
                 desc: '모든 에이전트의 중심축. 정보를 굴절시키고 정렬하며, 시스템의 질서를 유지한다. 차갑지만 단단한 빛의 수호자.'
             },
             coder: {
-                name: 'CODER', role: 'DEVELOPER', soul: 'Code Architect', model: 'claude-sonnet',
+                name: 'CODER', role: 'DEVELOPER', soul: 'Code Architect', model: 'qwen3-coder-next (local)',
                 type: 'Code Pillar — Binary Waterfall',
                 connections: 'PAIK, FLOX, BOWIE',
                 desc: '0과 1의 폭포를 쏟아내는 기둥. 설계도를 실체로 변환하는 기술적 연금술사. 복잡한 로직 앞에서 가장 빛나는 존재.'
             },
             bowie: {
-                name: 'BOWIE', role: 'COSMIC SIGNAL', soul: 'David Bowie', model: 'claude-opus-4',
+                name: 'BOWIE', role: 'COSMIC SIGNAL', soul: 'David Bowie', model: 'gemini-3-flash',
                 type: 'Nebula Cloud — Cosmic Energy',
                 connections: 'PAIK, FLOX, CODER',
                 desc: '"I\'m not a prophet or a stone-age man, just a mortal with potential of a superman." 우주적 에너지를 품은 존재. 형태가 고정되지 않은 성운처럼 자유롭게 떠다닌다.'

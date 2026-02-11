@@ -37,10 +37,10 @@ cat > status.json << ENDJSON
     "uptime": "$UPTIME"
   },
   "agents": [
-    {"id":"paik","name":"PAIK","role":"VISUAL STRATEGIST","soul":"Nam June Paik","model":"claude-opus-4","color":"#ff00ff","status":"active"},
-    {"id":"flox","name":"FLOX","role":"ORCHESTRATOR","soul":"System Core","model":"claude-opus-4","color":"#00e5ff","status":"idle"},
-    {"id":"coder","name":"CODER","role":"DEVELOPER","soul":"Code Architect","model":"claude-sonnet","color":"#39ff14","status":"idle"},
-    {"id":"bowie","name":"BOWIE","role":"COSMIC SIGNAL","soul":"David Bowie","model":"claude-opus-4","color":"#ffaa00","status":"idle"}
+    {"id":"paik","name":"PAIK","role":"VISUAL STRATEGIST","soul":"Nam June Paik","model":"gemini-3-flash","color":"#ff00ff","status":"active"},
+    {"id":"flox","name":"FLOX","role":"ORCHESTRATOR","soul":"System Core","model":"gpt-5.3-codex","color":"#00e5ff","status":"idle"},
+    {"id":"coder","name":"CODER","role":"DEVELOPER","soul":"Code Architect","model":"qwen3-coder-next (local)","color":"#39ff14","status":"idle"},
+    {"id":"bowie","name":"BOWIE","role":"COSMIC SIGNAL","soul":"David Bowie","model":"gemini-3-flash","color":"#ffaa00","status":"idle"}
   ]
 }
 ENDJSON
