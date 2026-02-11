@@ -24,6 +24,10 @@ HOSTNAME=$(hostname)
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 LOAD=$(sysctl -n vm.loadavg | awk '{print $2}')
 
+# Signal Activity (proxy: count messages in the last 15 mins in agent sessions)
+MSG_COUNT=$(find /Users/yoon/.openclaw/agents/*/sessions/ -name "*.jsonl" -mmin -15 | wc -l | xargs)
+SIGNAL_DENSITY=$(echo "$MSG_COUNT" | awk '{print ($1 > 5 ? 100 : $1 * 20)}')
+
 cat > status.json << ENDJSON
 {
   "timestamp": "$TIMESTAMP",
@@ -34,7 +38,8 @@ cat > status.json << ENDJSON
     "ram_percent": $MEM_PCT,
     "ram_total_gb": $MEM_TOTAL_GB,
     "load": $LOAD,
-    "uptime": "$UPTIME"
+    "uptime": "$UPTIME",
+    "signal_density": $SIGNAL_DENSITY
   },
   "agents": [
     {"id":"paik","name":"PAIK","role":"VISUAL STRATEGIST","soul":"Nam June Paik","model":"gemini-3-flash","color":"#ff00ff","status":"active"},
