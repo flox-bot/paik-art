@@ -531,46 +531,41 @@
         // Single requestAnimationFrame loop for efficiency
         // ============================================
 
-        // Static circuit grid (rendered once)
-        const circuitCanvas = document.getElementById('circuit-canvas');
-        const circuitCtx = circuitCanvas.getContext('2d');
+        // Soul Particle System Canvas (dynamic particles replacing static circuit)
+        const particleCanvas = document.getElementById('circuit-canvas');
+        const particleCtx = particleCanvas.getContext('2d', { alpha: true });
+        
+        // Offscreen canvas for cached particle rendering optimization
+        let particleOffscreen = null;
+        let particleOffscreenCtx = null;
         
         // Dynamic code rain (rendered per frame)
         const codeCanvas = document.getElementById('code-rain-canvas');
-        const codeCtx = codeCanvas.getContext('2d');
+        const codeCtx = codeCanvas.getContext('2d', { alpha: true });
+
+        // System state for adaptive behavior
+        let currentCpuLoad = 35; // Default fallback
+        let particleCountMultiplier = 1.0;
+        let particleSpeedMultiplier = 1.0;
 
         function initCanvases() {
             const width = window.innerWidth;
             const height = window.innerHeight;
             
-            circuitCanvas.width = width;
-            circuitCanvas.height = height;
+            particleCanvas.width = width;
+            particleCanvas.height = height;
             codeCanvas.width = width;
             codeCanvas.height = height;
             
-            drawCircuitGrid();
+            // Initialize offscreen canvas for particle batch rendering
+            initParticleOffscreen(width, height);
         }
 
-        // Draw static circuit grid (only on init/resize)
-        function drawCircuitGrid() {
-            circuitCtx.fillStyle = 'rgba(10, 10, 15, 1)';
-            circuitCtx.fillRect(0, 0, circuitCanvas.width, circuitCanvas.height);
-            
-            circuitCtx.strokeStyle = 'rgba(0, 229, 255, 0.02)';
-            circuitCtx.lineWidth = 0.5;
-            
-            const gridSize = 80;
-            for(let x = 0; x <= circuitCanvas.width; x += gridSize) {
-                circuitCtx.beginPath();
-                circuitCtx.moveTo(x, 0);
-                circuitCtx.lineTo(x, circuitCanvas.height);
-                circuitCtx.stroke();
-            }
-            for(let y = 0; y <= circuitCanvas.height; y += gridSize) {
-                circuitCtx.beginPath();
-                circuitCtx.moveTo(0, y);
-                circuitCtx.lineTo(circuitCanvas.width, y);
-                circuitCtx.stroke();
+        // Initialize offscreen canvas for particle optimization
+        function initParticleOffscreen(width, height) {
+            if ('OffscreenCanvas' in window) {
+                particleOffscreen = new OffscreenCanvas(width, height);
+                particleOffscreenCtx = particleOffscreen.getContext('2d');
             }
         }
 
