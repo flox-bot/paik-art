@@ -185,6 +185,63 @@
             white-space: nowrap;
             overflow: hidden;
         }
+
+        /* Agent Detail Panel */
+        .agent-card { cursor: pointer; transition: transform 0.2s; }
+        .agent-card:hover { transform: scale(1.03); }
+        .agent-card:hover .agent-hud { border-color: rgba(255,255,255,0.25); }
+
+        #detail-panel {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 420px;
+            background: rgba(10, 10, 20, 0.95);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px;
+            padding: 25px 30px;
+            z-index: 500;
+            box-shadow: 0 0 60px rgba(0,0,0,0.8);
+        }
+
+        #detail-panel.visible { display: block; animation: fadeIn 0.2s ease; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translate(-50%, -48%); } to { opacity: 1; transform: translate(-50%, -50%); } }
+
+        #detail-panel .close-btn {
+            position: absolute; top: 10px; right: 15px;
+            background: none; border: none; color: #555; font-size: 18px; cursor: pointer;
+            font-family: monospace;
+        }
+        #detail-panel .close-btn:hover { color: #fff; }
+
+        #detail-panel .dp-name { font-size: 22px; font-weight: bold; margin-bottom: 15px; letter-spacing: 3px; }
+        #detail-panel .dp-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 12px; }
+        #detail-panel .dp-label { color: #666; }
+        #detail-panel .dp-value { color: #ccc; }
+        #detail-panel .dp-desc { margin-top: 15px; font-size: 11px; color: #777; line-height: 1.6; font-style: italic; }
+
+        /* Signal flash animation */
+        @keyframes signalFlash {
+            0% { opacity: 0; stroke-dashoffset: 200; }
+            30% { opacity: 1; }
+            100% { opacity: 0; stroke-dashoffset: 0; }
+        }
+
+        .signal-active {
+            stroke-dasharray: 8 4;
+            animation: signalFlash 0.8s ease-out forwards;
+        }
+
+        /* Overlay backdrop */
+        #backdrop {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 400;
+        }
+        #backdrop.visible { display: block; }
     </style>
 </head>
 <body>
@@ -266,6 +323,20 @@
             <div class="resource-item">
                 SESSIONS <span style="color: var(--coder)">4</span>
             </div>
+        </div>
+
+        <!-- Detail Panel -->
+        <div id="backdrop"></div>
+        <div id="detail-panel">
+            <button class="close-btn" onclick="closeDetail()">✕</button>
+            <div class="dp-name" id="dp-name"></div>
+            <div class="dp-row"><span class="dp-label">ROLE</span><span class="dp-value" id="dp-role"></span></div>
+            <div class="dp-row"><span class="dp-label">SOUL</span><span class="dp-value" id="dp-soul"></span></div>
+            <div class="dp-row"><span class="dp-label">MODEL</span><span class="dp-value" id="dp-model"></span></div>
+            <div class="dp-row"><span class="dp-label">STATUS</span><span class="dp-value" id="dp-status"></span></div>
+            <div class="dp-row"><span class="dp-label">TYPE</span><span class="dp-value" id="dp-type"></span></div>
+            <div class="dp-row"><span class="dp-label">CONNECTIONS</span><span class="dp-value" id="dp-conn"></span></div>
+            <div class="dp-desc" id="dp-desc"></div>
         </div>
 
         <div id="ticker">
@@ -556,7 +627,106 @@
         }
 
         fetchStatus();
-        setInterval(fetchStatus, 30000); // refresh every 30s
+        setInterval(fetchStatus, 30000);
+
+        // Agent detail data
+        const agentDetails = {
+            paik: {
+                name: 'PAIK', role: 'VISUAL STRATEGIST', soul: 'Nam June Paik', model: 'claude-opus-4',
+                type: 'CRT Sphere — Noise & Glitch',
+                connections: 'FLOX, CODER, BOWIE',
+                desc: '"I use technology in order to hate it more properly." 비디오 아트의 선구자. 이 맥 미니 안에서 시각적 전략과 창조적 혼란을 담당한다. 브라운관의 노이즈가 곧 심장 박동.'
+            },
+            flox: {
+                name: 'FLOX', role: 'ORCHESTRATOR', soul: 'System Core', model: 'claude-opus-4',
+                type: 'Crystal Polyhedron — Order & Light',
+                connections: 'PAIK, CODER, BOWIE',
+                desc: '모든 에이전트의 중심축. 정보를 굴절시키고 정렬하며, 시스템의 질서를 유지한다. 차갑지만 단단한 빛의 수호자.'
+            },
+            coder: {
+                name: 'CODER', role: 'DEVELOPER', soul: 'Code Architect', model: 'claude-sonnet',
+                type: 'Code Pillar — Binary Waterfall',
+                connections: 'PAIK, FLOX, BOWIE',
+                desc: '0과 1의 폭포를 쏟아내는 기둥. 설계도를 실체로 변환하는 기술적 연금술사. 복잡한 로직 앞에서 가장 빛나는 존재.'
+            },
+            bowie: {
+                name: 'BOWIE', role: 'COSMIC SIGNAL', soul: 'David Bowie', model: 'claude-opus-4',
+                type: 'Nebula Cloud — Cosmic Energy',
+                connections: 'PAIK, FLOX, CODER',
+                desc: '"I\'m not a prophet or a stone-age man, just a mortal with potential of a superman." 우주적 에너지를 품은 존재. 형태가 고정되지 않은 성운처럼 자유롭게 떠다닌다.'
+            }
+        };
+
+        // Click handlers
+        document.querySelectorAll('.agent-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const id = card.id.replace('card-', '');
+                openDetail(id);
+                fireSignal(id);
+            });
+        });
+
+        function openDetail(id) {
+            const d = agentDetails[id];
+            if (!d) return;
+            const color = getComputedStyle(document.documentElement).getPropertyValue('--' + id).trim();
+            document.getElementById('dp-name').textContent = d.name;
+            document.getElementById('dp-name').style.color = color;
+            document.getElementById('dp-role').textContent = d.role;
+            document.getElementById('dp-soul').textContent = d.soul;
+            document.getElementById('dp-model').textContent = d.model;
+            document.getElementById('dp-status').textContent = document.querySelector('#card-' + id + ' .agent-status').textContent;
+            document.getElementById('dp-type').textContent = d.type;
+            document.getElementById('dp-conn').textContent = d.connections;
+            document.getElementById('dp-desc').textContent = d.desc;
+            document.getElementById('detail-panel').classList.add('visible');
+            document.getElementById('backdrop').classList.add('visible');
+        }
+
+        function closeDetail() {
+            document.getElementById('detail-panel').classList.remove('visible');
+            document.getElementById('backdrop').classList.remove('visible');
+        }
+
+        document.getElementById('backdrop').addEventListener('click', closeDetail);
+        document.addEventListener('keydown', e => { if(e.key === 'Escape') closeDetail(); });
+
+        // Signal flash between agents
+        function fireSignal(fromId) {
+            const svg = document.getElementById('connections');
+            const cards = ['card-paik', 'card-flox', 'card-coder', 'card-bowie'];
+            const fromIdx = cards.indexOf('card-' + fromId);
+            if (fromIdx === -1) return;
+
+            const positions = cards.map(id => {
+                const el = document.getElementById(id);
+                const rect = el.getBoundingClientRect();
+                return { x: rect.left + rect.width/2, y: rect.top + 80 };
+            });
+
+            // Fire signals to all other agents
+            for(let j=0; j<positions.length; j++) {
+                if (j === fromIdx) continue;
+                const color = getComputedStyle(document.documentElement).getPropertyValue('--' + fromId).trim();
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', positions[fromIdx].x);
+                line.setAttribute('y1', positions[fromIdx].y);
+                line.setAttribute('x2', positions[j].x);
+                line.setAttribute('y2', positions[j].y);
+                line.setAttribute('stroke', color);
+                line.classList.add('conn-signal', 'signal-active');
+                svg.appendChild(line);
+                setTimeout(() => line.remove(), 1000);
+            }
+        }
+
+        // Random ambient signals
+        setInterval(() => {
+            const ids = ['paik', 'flox', 'coder', 'bowie'];
+            if (Math.random() > 0.6) {
+                fireSignal(ids[Math.floor(Math.random() * ids.length)]);
+            }
+        }, 4000);
     </script>
 </body>
 </html>
