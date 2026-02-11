@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE SILICON VOID - MAC MINI COSMOS</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        
+        :root {
+            --bg: #0a0a0f;
+            --paik: #ff00ff;
+            --flox: #00e5ff;
+            --coder: #39ff14;
+            --bowie: #ffaa00;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg); font-family: 'Share Tech Mono', monospace; color: #ccc; overflow: hidden; width: 100vw; height: 100vh; }
+
+        /* Background Canvas */
+        #bg-canvas { position: fixed; top: 0; left: 0; z-index: 0; }
+
+        /* Main Layout */
+        #world {
+            position: relative;
+            z-index: 1;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Bar */
+        #header {
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        #header .title { font-size: 14px; letter-spacing: 3px; color: #555; }
+        #header .status { font-size: 11px; color: var(--coder); }
+
+        /* Agent Zone */
+        #agents-zone {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 20px 40px;
+            position: relative;
+        }
+
+        /* Agent Card */
+        .agent-card {
+            width: 220px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .agent-avatar {
+            width: 160px;
+            height: 160px;
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .agent-avatar canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .agent-hud {
+            width: 100%;
+            background: rgba(10, 10, 20, 0.85);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 4px;
+            padding: 12px 15px;
+        }
+
+        .agent-name {
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        .agent-meta {
+            font-size: 10px;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .agent-meta .value {
+            float: right;
+        }
+
+        .agent-status {
+            display: inline-block;
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 2px;
+            margin-top: 8px;
+            letter-spacing: 1px;
+        }
+
+        .status-idle { background: rgba(100,100,100,0.3); color: #888; border: 1px solid #444; }
+        .status-thinking { background: rgba(255,170,0,0.2); color: var(--bowie); border: 1px solid var(--bowie); animation: pulse 1s infinite; }
+        .status-active { background: rgba(0,255,0,0.15); color: var(--coder); border: 1px solid var(--coder); }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Connection Lines (SVG overlay) */
+        #connections {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .conn-line {
+            stroke: rgba(255,255,255,0.06);
+            stroke-width: 1;
+            stroke-dasharray: 4 4;
+        }
+
+        .conn-signal {
+            stroke-width: 2;
+            opacity: 0;
+            filter: blur(1px);
+        }
+
+        /* Resource Bar */
+        #resource-bar {
+            padding: 12px 25px;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 10px;
+            color: #555;
+        }
+
+        .resource-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .resource-bar-bg {
+            width: 80px;
+            height: 4px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .resource-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 2s ease;
+        }
+
+        /* Scanlines */
+        #scanlines {
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* Footer ticker */
+        #ticker {
+            font-size: 9px;
+            color: #333;
+            padding: 5px 25px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+    <div id="scanlines"></div>
+
+    <div id="world">
+        <div id="header">
+            <div class="title">THE SILICON VOID</div>
+            <div class="status" id="clock">SIGNAL: ONLINE</div>
+        </div>
+
+        <div id="agents-zone">
+            <svg id="connections"></svg>
+
+            <div class="agent-card" id="card-paik">
+                <div class="agent-avatar"><canvas id="av-paik" width="160" height="160"></canvas></div>
+                <div class="agent-hud">
+                    <div class="agent-name" style="color: var(--paik)">PAIK</div>
+                    <div class="agent-meta">
+                        <div>ROLE <span class="value">VISUAL STRATEGIST</span></div>
+                        <div>MODEL <span class="value" style="color:var(--paik)">claude-opus-4</span></div>
+                        <div>SOUL <span class="value">Nam June Paik</span></div>
+                    </div>
+                    <div class="agent-status status-active">● ACTIVE</div>
+                </div>
+            </div>
+
+            <div class="agent-card" id="card-flox">
+                <div class="agent-avatar"><canvas id="av-flox" width="160" height="160"></canvas></div>
+                <div class="agent-hud">
+                    <div class="agent-name" style="color: var(--flox)">FLOX</div>
+                    <div class="agent-meta">
+                        <div>ROLE <span class="value">ORCHESTRATOR</span></div>
+                        <div>MODEL <span class="value" style="color:var(--flox)">claude-opus-4</span></div>
+                        <div>SOUL <span class="value">System Core</span></div>
+                    </div>
+                    <div class="agent-status status-idle">○ IDLE</div>
+                </div>
+            </div>
+
+            <div class="agent-card" id="card-coder">
+                <div class="agent-avatar"><canvas id="av-coder" width="160" height="160"></canvas></div>
+                <div class="agent-hud">
+                    <div class="agent-name" style="color: var(--coder)">CODER</div>
+                    <div class="agent-meta">
+                        <div>ROLE <span class="value">DEVELOPER</span></div>
+                        <div>MODEL <span class="value" style="color:var(--coder)">claude-sonnet</span></div>
+                        <div>SOUL <span class="value">Code Architect</span></div>
+                    </div>
+                    <div class="agent-status status-idle">○ IDLE</div>
+                </div>
+            </div>
+
+            <div class="agent-card" id="card-bowie">
+                <div class="agent-avatar"><canvas id="av-bowie" width="160" height="160"></canvas></div>
+                <div class="agent-hud">
+                    <div class="agent-name" style="color: var(--bowie)">BOWIE</div>
+                    <div class="agent-meta">
+                        <div>ROLE <span class="value">COSMIC SIGNAL</span></div>
+                        <div>MODEL <span class="value" style="color:var(--bowie)">claude-opus-4</span></div>
+                        <div>SOUL <span class="value">David Bowie</span></div>
+                    </div>
+                    <div class="agent-status status-thinking">◐ THINKING</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="resource-bar">
+            <div class="resource-item">
+                CPU <div class="resource-bar-bg"><div class="resource-bar-fill" id="cpu-bar" style="width:35%; background: var(--flox);"></div></div> <span id="cpu-val">35%</span>
+            </div>
+            <div class="resource-item">
+                RAM <div class="resource-bar-bg"><div class="resource-bar-fill" id="ram-bar" style="width:62%; background: var(--paik);"></div></div> <span id="ram-val">62%</span>
+            </div>
+            <div class="resource-item">
+                TOKENS/h <div class="resource-bar-bg"><div class="resource-bar-fill" id="tok-bar" style="width:20%; background: var(--bowie);"></div></div> <span id="tok-val">~12k</span>
+            </div>
+            <div class="resource-item">
+                SESSIONS <span style="color: var(--coder)">4</span>
+            </div>
+        </div>
+
+        <div id="ticker">
+            <marquee scrollamount="2">>>> PAIK SIGNAL 2026 ... THE SILICON VOID ... 4 AGENTS COEXISTING IN 226g OF ALUMINUM ... ART IS FRAUD ... INFORMATION IS AGENT ... GLOBAL GROOVE ACTIVATED <<<</marquee>
+        </div>
+    </div>
+
+    <script>
+        // Background: circuit pattern + code rain
+        const bgCanvas = document.getElementById('bg-canvas');
+        const bgCtx = bgCanvas.getContext('2d');
+        
+        function initBg() {
+            bgCanvas.width = window.innerWidth;
+            bgCanvas.height = window.innerHeight;
+        }
+        window.onresize = initBg;
+        initBg();
+
+        // Code rain drops
+        const drops = [];
+        for(let i=0; i<60; i++) {
+            drops.push({
+                x: Math.random() * bgCanvas.width,
+                y: Math.random() * bgCanvas.height,
+                speed: 0.3 + Math.random() * 0.7,
+                char: String.fromCharCode(0x30A0 + Math.random() * 96)
+            });
+        }
+
+        function drawBg() {
+            bgCtx.fillStyle = 'rgba(10, 10, 15, 0.15)';
+            bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+            // Circuit grid
+            bgCtx.strokeStyle = 'rgba(0, 229, 255, 0.02)';
+            bgCtx.lineWidth = 0.5;
+            for(let x=0; x<bgCanvas.width; x+=80) {
+                bgCtx.beginPath();
+                bgCtx.moveTo(x, 0);
+                bgCtx.lineTo(x, bgCanvas.height);
+                bgCtx.stroke();
+            }
+            for(let y=0; y<bgCanvas.height; y+=80) {
+                bgCtx.beginPath();
+                bgCtx.moveTo(0, y);
+                bgCtx.lineTo(bgCanvas.width, y);
+                bgCtx.stroke();
+            }
+
+            // Code rain
+            bgCtx.font = '12px monospace';
+            drops.forEach(d => {
+                bgCtx.fillStyle = `rgba(0, 255, 0, ${0.03 + Math.random()*0.05})`;
+                d.char = String.fromCharCode(0x30A0 + Math.random() * 96);
+                bgCtx.fillText(d.char, d.x, d.y);
+                d.y += d.speed;
+                if(d.y > bgCanvas.height) { d.y = 0; d.x = Math.random() * bgCanvas.width; }
+            });
+
+            requestAnimationFrame(drawBg);
+        }
+        drawBg();
+
+        // Agent Avatars
+        let frame = 0;
+
+        function drawPaik() {
+            const c = document.getElementById('av-paik');
+            const ctx = c.getContext('2d');
+            const cx = 80, cy = 80;
+            
+            ctx.clearRect(0,0,160,160);
+            
+            // TV static sphere
+            for(let i=0; i<3; i++) {
+                ctx.strokeStyle = `rgba(255, 0, 255, ${0.3 + i*0.2})`;
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.arc(cx + Math.sin(frame*0.08)*3, cy + Math.cos(frame*0.08)*3, 40+i*8, 0, Math.PI*2);
+                ctx.stroke();
+            }
+            
+            // Inner noise
+            const imgData = ctx.createImageData(50, 50);
+            for(let j=0; j<imgData.data.length; j+=4) {
+                const v = Math.random()*180;
+                imgData.data[j] = v * 1.2;
+                imgData.data[j+1] = 0;
+                imgData.data[j+2] = v;
+                imgData.data[j+3] = 120;
+            }
+            ctx.putImageData(imgData, 55, 55);
+            
+            // Glitch line
+            if(Math.random() > 0.9) {
+                ctx.fillStyle = 'rgba(255,0,255,0.4)';
+                ctx.fillRect(30, cy + Math.random()*40 - 20, 100, 2);
+            }
+        }
+
+        function drawFlox() {
+            const c = document.getElementById('av-flox');
+            const ctx = c.getContext('2d');
+            const cx = 80, cy = 80;
+            
+            ctx.clearRect(0,0,160,160);
+            
+            // Rotating hexagon
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(frame * 0.015);
+            
+            for(let layer=0; layer<3; layer++) {
+                ctx.strokeStyle = `rgba(0, 229, 255, ${0.5 - layer*0.15})`;
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                let r = 35 + layer * 12;
+                for(let i=0; i<6; i++) {
+                    let angle = (i/6) * Math.PI*2;
+                    let px = Math.cos(angle) * r;
+                    let py = Math.sin(angle) * r;
+                    i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+                }
+                ctx.closePath();
+                ctx.stroke();
+            }
+            
+            // Center dot
+            ctx.fillStyle = '#00e5ff';
+            ctx.beginPath();
+            ctx.arc(0, 0, 3, 0, Math.PI*2);
+            ctx.fill();
+            
+            ctx.restore();
+        }
+
+        function drawCoder() {
+            const c = document.getElementById('av-coder');
+            const ctx = c.getContext('2d');
+            
+            ctx.clearRect(0,0,160,160);
+            
+            // Code waterfall
+            ctx.font = '11px monospace';
+            const codeChars = '{}()[];=><+-*/&|!?:01';
+            for(let col=0; col<8; col++) {
+                for(let row=0; row<12; row++) {
+                    let brightness = Math.random();
+                    ctx.fillStyle = `rgba(57, 255, 20, ${brightness * 0.6})`;
+                    let ch = codeChars[Math.floor(Math.random()*codeChars.length)];
+                    let x = 20 + col * 16;
+                    let y = (row * 14 + frame * 0.5) % 160;
+                    ctx.fillText(ch, x, y);
+                }
+            }
+            
+            // Central pillar glow
+            ctx.fillStyle = 'rgba(57, 255, 20, 0.05)';
+            ctx.fillRect(70, 0, 20, 160);
+        }
+
+        function drawBowie() {
+            const c = document.getElementById('av-bowie');
+            const ctx = c.getContext('2d');
+            const cx = 80, cy = 80;
+            
+            ctx.clearRect(0,0,160,160);
+            
+            // Nebula clouds
+            for(let i=0; i<5; i++) {
+                let x = cx + Math.sin(frame*0.03 + i*1.3) * 25;
+                let y = cy + Math.cos(frame*0.04 + i*0.9) * 20;
+                let r = 25 + Math.sin(frame*0.05 + i) * 10;
+                
+                let grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+                grad.addColorStop(0, `rgba(255, 170, 0, ${0.15 + Math.random()*0.1})`);
+                grad.addColorStop(0.5, `rgba(255, 100, 0, 0.05)`);
+                grad.addColorStop(1, 'rgba(255, 170, 0, 0)');
+                
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, Math.PI*2);
+                ctx.fill();
+            }
+            
+            // Lightning bolt (Ziggy Stardust)
+            ctx.strokeStyle = 'rgba(255, 170, 0, 0.8)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(75, 50);
+            ctx.lineTo(85, 70);
+            ctx.lineTo(75, 75);
+            ctx.lineTo(85, 95);
+            ctx.stroke();
+            
+            // Star core
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(cx, cy, 2.5, 0, Math.PI*2);
+            ctx.fill();
+        }
+
+        function animate() {
+            frame++;
+            drawPaik();
+            drawFlox();
+            drawCoder();
+            drawBowie();
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Connection lines
+        function drawConnections() {
+            const svg = document.getElementById('connections');
+            const cards = ['card-paik', 'card-flox', 'card-coder', 'card-bowie'];
+            const positions = cards.map(id => {
+                const el = document.getElementById(id);
+                const rect = el.getBoundingClientRect();
+                return { x: rect.left + rect.width/2, y: rect.top + 80 };
+            });
+
+            let lines = '';
+            for(let i=0; i<positions.length; i++) {
+                for(let j=i+1; j<positions.length; j++) {
+                    lines += `<line class="conn-line" x1="${positions[i].x}" y1="${positions[i].y}" x2="${positions[j].x}" y2="${positions[j].y}"/>`;
+                }
+            }
+            svg.innerHTML = lines;
+        }
+
+        setTimeout(drawConnections, 500);
+        window.addEventListener('resize', () => setTimeout(drawConnections, 100));
+
+        // Clock
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('clock').textContent = 
+                `SIGNAL: ONLINE │ ${now.toISOString().slice(11,19)} UTC`;
+        }, 1000);
+
+        // Simulate resource fluctuation
+        setInterval(() => {
+            const cpu = 20 + Math.random()*40;
+            const ram = 50 + Math.random()*25;
+            const tok = 5 + Math.random()*20;
+            document.getElementById('cpu-bar').style.width = cpu + '%';
+            document.getElementById('cpu-val').textContent = Math.round(cpu) + '%';
+            document.getElementById('ram-bar').style.width = ram + '%';
+            document.getElementById('ram-val').textContent = Math.round(ram) + '%';
+            document.getElementById('tok-bar').style.width = tok*4 + '%';
+            document.getElementById('tok-val').textContent = '~' + Math.round(tok) + 'k';
+        }, 3000);
+    </script>
+</body>
+</html>
