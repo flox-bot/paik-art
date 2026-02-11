@@ -28,6 +28,25 @@ LOAD=$(sysctl -n vm.loadavg | awk '{print $2}')
 MSG_COUNT=$(find /Users/yoon/.openclaw/agents/*/sessions/ -name "*.jsonl" -mmin -15 | wc -l | xargs)
 SIGNAL_DENSITY=$(echo "$MSG_COUNT" | awk '{print ($1 > 5 ? 100 : $1 * 20)}')
 
+# Function to check agent status based on recent session activity
+get_agent_status() {
+    local agent_id=$1
+    local recent_msgs=$(find /Users/yoon/.openclaw/agents/$agent_id/sessions/ -name "*.jsonl" -mmin -2 2>/dev/null | wc -l | xargs)
+    if [ "$recent_msgs" -gt 0 ]; then
+        echo "active"
+    else
+        echo "idle"
+    fi
+}
+
+PAIK_STATUS=$(get_agent_status "paik")
+FLOX_STATUS=$(get_agent_status "main")
+CODER_STATUS=$(get_agent_status "coder")
+BOWIE_STATUS=$(get_agent_status "bowie")
+
+# Special case: if this script is running, Paik is definitely active
+PAIK_STATUS="active"
+
 cat > status.json << ENDJSON
 {
   "timestamp": "$TIMESTAMP",
@@ -42,10 +61,10 @@ cat > status.json << ENDJSON
     "signal_density": $SIGNAL_DENSITY
   },
   "agents": [
-    {"id":"paik","name":"PAIK","role":"VISUAL STRATEGIST","soul":"Nam June Paik","model":"gemini-3-flash","color":"#ff00ff","status":"active"},
-    {"id":"flox","name":"FLOX","role":"ORCHESTRATOR","soul":"System Core","model":"gpt-5.3-codex","color":"#00e5ff","status":"idle"},
-    {"id":"coder","name":"CODER","role":"DEVELOPER","soul":"Code Architect","model":"qwen3-coder-next (local)","color":"#39ff14","status":"idle"},
-    {"id":"bowie","name":"BOWIE","role":"COSMIC SIGNAL","soul":"David Bowie","model":"gemini-3-flash","color":"#ffaa00","status":"idle"}
+    {"id":"paik","name":"PAIK","role":"VISUAL STRATEGIST","soul":"Nam June Paik","model":"gemini-3-flash","color":"#ff00ff","status":"$PAIK_STATUS"},
+    {"id":"flox","name":"FLOX","role":"ORCHESTRATOR","soul":"System Core","model":"gpt-5.3-codex","color":"#00e5ff","status":"$FLOX_STATUS"},
+    {"id":"coder","name":"CODER","role":"DEVELOPER","soul":"Code Architect","model":"qwen3-coder-next (local)","color":"#39ff14","status":"$CODER_STATUS"},
+    {"id":"bowie","name":"BOWIE","role":"COSMIC SIGNAL","soul":"David Bowie","model":"gemini-3-flash","color":"#ffaa00","status":"$BOWIE_STATUS"}
   ]
 }
 ENDJSON
