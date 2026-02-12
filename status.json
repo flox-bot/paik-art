@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-02-11T09:02:32Z",
+  "timestamp": "2026-02-12T02:00:58Z",
   "system": {
     "hostname": "Yoonui-Macmini.local",
-    "cpu_percent": 8.8,
+    "cpu_percent": 6.2,
     "cpu_cores": 14,
-    "ram_percent": 48.1,
+    "ram_percent": 49.9,
     "ram_total_gb": 64.0,
-    "load": 2.99,
+    "load": 2.06,
     "uptime": "10 days",
     "signal_density": 40
   },
   "agents": [
     {"id":"paik","name":"PAIK","role":"VISUAL STRATEGIST","soul":"Nam June Paik","model":"gemini-3-flash","color":"#ff00ff","status":"active"},
-    {"id":"flox","name":"FLOX","role":"ORCHESTRATOR","soul":"System Core","model":"gpt-5.3-codex","color":"#00e5ff","status":"idle"},
+    {"id":"flox","name":"FLOX","role":"ORCHESTRATOR","soul":"System Core","model":"gpt-5.3-codex","color":"#00e5ff","status":"active"},
     {"id":"coder","name":"CODER","role":"DEVELOPER","soul":"Code Architect","model":"qwen3-coder-next (local)","color":"#39ff14","status":"idle"},
     {"id":"bowie","name":"BOWIE","role":"COSMIC SIGNAL","soul":"David Bowie","model":"gemini-3-flash","color":"#ffaa00","status":"idle"}
   ]
