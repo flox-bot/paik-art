@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-02-13T01:57:41Z",
+  "timestamp": "2026-02-13T02:07:42Z",
   "system": {
     "hostname": "Yoonui-Macmini.local",
-    "cpu_percent": 2.4,
+    "cpu_percent": 3.7,
     "cpu_cores": 14,
-    "ram_percent": 49.5,
+    "ram_percent": 49.7,
     "ram_total_gb": 64.0,
-    "load": 1.47,
+    "load": 1.08,
     "uptime": "11 days",
     "signal_density": 60
   },
