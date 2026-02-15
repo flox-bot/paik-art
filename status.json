@@ -1,14 +1,14 @@
 {
-  "timestamp": "2026-02-15T03:17:48Z",
+  "timestamp": "2026-02-15T03:27:40Z",
   "system": {
     "hostname": "Yoonui-Macmini.local",
-    "cpu_percent": 6.6,
+    "cpu_percent": 6.3,
     "cpu_cores": 14,
-    "ram_percent": 49.2,
+    "ram_percent": 49.5,
     "ram_total_gb": 64.0,
-    "load": 2.30,
+    "load": 2.12,
     "uptime": "13 days",
-    "signal_density": 20
+    "signal_density": 40
   },
   "agents": [
     {"id":"paik","name":"PAIK","role":"VISUAL STRATEGIST","soul":"Nam June Paik","model":"gemini-3-flash","color":"#ff00ff","status":"active"},
